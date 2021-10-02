@@ -4,8 +4,7 @@ import generateMessage, { Message } from './Api';
 import Header from './components/header';
 import Card from './components/card';
 import Button from './components/button';
-import { Column, Row } from './components/grid';
-import styled from 'styled-components';
+import { Column, Row, Alert, ClearRow, ButtonRow } from './components/common';
 import { Snackbar } from '@material-ui/core';
 
 
@@ -15,17 +14,10 @@ type MessageGroup = {
   info: Message[];
 }
 
-const ClearRow = styled.div`
-display: flex;
-padding-top: 10px;
-justify-content: end;
-`;
-
 const App: React.FC<{}> = () => {
   const [messages, setMessages] = useState<MessageGroup>({ errors: [], warnings: [], info: [] });
   const [cleanUp, setCleanUp] = useState<null | (() => void)>(null);
-  const [open, setOpen] = React.useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarMessage, setSnackbarMessage] = useState<string | null>('');
 
   useEffect(() => {
     return start();
@@ -86,12 +78,8 @@ const App: React.FC<{}> = () => {
     setMessages({ errors, warnings, info });
   }
 
-  const openSnackbar = () => {
-    setOpen(true);
-  };
-
   const closeSnackbar = () => {
-    setOpen(false);
+    setSnackbarMessage(null);
   };
 
   const renderGroups = (title: string, type: string, list: Message[]) => {
@@ -102,7 +90,7 @@ const App: React.FC<{}> = () => {
         <div>count {list.length}</div>
         <div>
           {list.map((item: Message) => {
-            return <Card key={item.message} background={background}>
+            return <Card data-testid="card" key={item.message} background={background}>
               <div>{item.message}</div>
               <ClearRow onClick={() => clear(item, type)}>clear</ClearRow>
             </Card>;
@@ -115,26 +103,28 @@ const App: React.FC<{}> = () => {
 
   return (
     <div>
-      <Header>nunffsaid.com Coding Challenge</Header>
-      <div>
+      <Header data-testid="header">nunffsaid.com Coding Challenge</Header>
+      <ButtonRow>
         {!cleanUp ?
-          <Button onClick={start}>Start</Button> :
-          <Button onClick={stop}>Stop</Button>
+          <Button data-testid="start-button" onClick={start}>Start</Button> :
+          <Button data-testid="stop-button" onClick={stop}>Stop</Button>
         }
-        <Button onClick={clearAll}>Clear</Button>
-      </div>
-      <Row>
-        <Column width="33%">
+        <Button data-testid="clear-button" onClick={clearAll}>Clear</Button>
+      </ButtonRow>
+      <Row data-testid="row">
+        <Column data-testid="column-1" width="33%">
           {renderGroups('Error Type 1', 'error', messages.errors)}
         </Column>
-        <Column width="33%">
+        <Column data-testid="column-2" width="33%">
           {renderGroups('Warning Type 2', 'warning', messages.warnings)}
         </Column>
-        <Column width="33%">
+        <Column data-testid="column-3" width="33%">
           {renderGroups('Info Type 3', 'info', messages.info)}
         </Column>
       </Row>
-      <Snackbar open={!!snackbarMessage} onClose={closeSnackbar}><div>{snackbarMessage}</div></Snackbar>
+      <Snackbar data-testid="snackbar" open={!!snackbarMessage} autoHideDuration={2000} onClose={closeSnackbar} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+        <Alert>{snackbarMessage} <span style={{ cursor: 'pointer', marginLeft: '20px' }} onClick={closeSnackbar}>x</span></Alert>
+      </Snackbar>
     </div>
   );
 }
